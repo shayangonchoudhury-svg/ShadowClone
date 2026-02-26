@@ -1,62 +1,32 @@
+/* ---------------- GLOBAL ---------------- */
+
 body {
   margin: 0;
   overflow: hidden;
   font-family: 'Segoe UI', sans-serif;
+  background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
   color: #00ffff;
-  background: linear-gradient(270deg, #020617, #0f172a, #020617);
-  background-size: 600% 600%;
-  animation: bgShift 15s ease infinite;
 }
 
-@keyframes bgShift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+/* Subtle animated background glow */
+body::before {
+  content: "";
+  position: fixed;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle, rgba(0,255,255,0.08) 0%, transparent 70%);
+  animation: rotateGlow 25s linear infinite;
+  pointer-events: none;
 }
 
-#ui {
-  position: absolute;
-  top: 15px;
-  left: 20px;
-  z-index: 10;
-  font-size: 16px;
-  text-shadow: 0 0 10px #00ffff;
+@keyframes rotateGlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-canvas {
-  display: block;
-  margin: auto;
-  border: 2px solid rgba(0,255,255,0.4);
-  border-radius: 20px;
-  box-shadow: 0 0 30px rgba(0,255,255,0.4),
-              inset 0 0 40px rgba(0,255,255,0.15);
-}
-
-#gameOver {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  text-shadow: 0 0 20px red;
-}
-
-button {
-  padding: 12px 25px;
-  font-size: 18px;
-  background: #00ffff;
-  border: none;
-  border-radius: 30px;
-  box-shadow: 0 0 15px #00ffff;
-  transition: 0.3s;
-}
-
-.hidden {
-  display: none;
-}
-
-
-/* LOADING SCREEN */
+/* ---------------- LOADING SCREEN ---------------- */
 
 #loadingScreen {
   position: fixed;
@@ -72,19 +42,195 @@ button {
 }
 
 #loadingScreen h1 {
-  font-size: 32px;
-  text-shadow: 0 0 20px cyan;
+  font-size: 38px;
+  letter-spacing: 4px;
+  text-shadow:
+    0 0 10px #00ffff,
+    0 0 20px #00ffff,
+    0 0 40px #00ffff;
+  animation: pulseTitle 2s infinite ease-in-out;
+}
+
+@keyframes pulseTitle {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
 }
 
 .loader {
   width: 70%;
   height: 10px;
   background: #111;
-  margin-top: 20px;
+  border-radius: 20px;
+  margin-top: 30px;
+  overflow: hidden;
 }
 
 #loadingBar {
   width: 0%;
   height: 100%;
-  background: cyan;
+  background: linear-gradient(90deg, #00ffff, #66ffff);
+  box-shadow: 0 0 15px #00ffff;
+  transition: width 0.2s;
+}
+
+/* ---------------- UI PANEL ---------------- */
+
+#ui {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 15px 20px;
+  border-radius: 20px;
+  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 15px rgba(0,255,255,0.3),
+    inset 0 0 10px rgba(0,255,255,0.2);
+  font-size: 15px;
+  line-height: 1.8;
+  z-index: 10;
+  animation: fadeInUI 1s ease;
+}
+
+@keyframes fadeInUI {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#ui span {
+  font-weight: bold;
+  background: linear-gradient(90deg, #00ffff, #ff00ff, #00ffff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGradient 3s linear infinite;
+}
+
+@keyframes textGradient {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+
+/* ---------------- CANVAS ---------------- */
+
+canvas {
+  display: block;
+  margin: auto;
+  border: 2px solid rgba(0,255,255,0.4);
+  border-radius: 25px;
+  box-shadow:
+    0 0 30px rgba(0,255,255,0.5),
+    inset 0 0 60px rgba(0,255,255,0.1);
+  transition: 0.3s;
+}
+
+/* Slight glow pulse */
+canvas:hover {
+  box-shadow:
+    0 0 40px rgba(0,255,255,0.7),
+    inset 0 0 80px rgba(0,255,255,0.2);
+}
+
+/* ---------------- GAME OVER SCREEN ---------------- */
+
+#gameOver {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  padding: 40px 50px;
+  border-radius: 25px;
+  backdrop-filter: blur(15px);
+  background: rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 0 30px rgba(255,0,0,0.4),
+    inset 0 0 15px rgba(255,0,0,0.3);
+  animation: popIn 0.4s ease;
+}
+
+@keyframes popIn {
+  from { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+#gameOver h1 {
+  color: #ff4444;
+  font-size: 32px;
+  text-shadow:
+    0 0 10px red,
+    0 0 20px red;
+  margin-bottom: 25px;
+}
+
+/* ---------------- BUTTON ---------------- */
+
+button {
+  padding: 14px 35px;
+  font-size: 18px;
+  border: none;
+  border-radius: 40px;
+  background: linear-gradient(45deg, #00ffff, #66ffff);
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow:
+    0 0 15px #00ffff,
+    0 0 30px rgba(0,255,255,0.6);
+  transition: 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.08);
+  box-shadow:
+    0 0 25px #00ffff,
+    0 0 50px rgba(0,255,255,0.8);
+}
+
+/* ---------------- UTILITY ---------------- */
+
+.hidden {
+  display: none;
+}
+
+/* Animated border glow */
+
+#ui {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  padding: 15px 20px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(12px);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+  animation: borderShift 4s linear infinite;
+}
+
+#ui span {
+  color: white;
+  font-weight: bold;
+  text-shadow: 0 0 8px cyan;
+}
+
+@keyframes borderMove {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+#gameOver {
+  animation: glowPulse 2s infinite alternate;
+}
+
+@keyframes glowPulse {
+  from { box-shadow: 0 0 20px red; }
+  to { box-shadow: 0 0 40px orange; }
+}
+
+#finalScoreDisplay {
+  font-size: 22px;
+  margin-bottom: 20px;
+  color: white;
 }
