@@ -1,0 +1,90 @@
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  color: #00ffff;
+  background: linear-gradient(270deg, #020617, #0f172a, #020617);
+  background-size: 600% 600%;
+  animation: bgShift 15s ease infinite;
+}
+
+@keyframes bgShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+#ui {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  z-index: 10;
+  font-size: 16px;
+  text-shadow: 0 0 10px #00ffff;
+}
+
+canvas {
+  display: block;
+  margin: auto;
+  border: 2px solid rgba(0,255,255,0.4);
+  border-radius: 20px;
+  box-shadow: 0 0 30px rgba(0,255,255,0.4),
+              inset 0 0 40px rgba(0,255,255,0.15);
+}
+
+#gameOver {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  text-shadow: 0 0 20px red;
+}
+
+button {
+  padding: 12px 25px;
+  font-size: 18px;
+  background: #00ffff;
+  border: none;
+  border-radius: 30px;
+  box-shadow: 0 0 15px #00ffff;
+  transition: 0.3s;
+}
+
+.hidden {
+  display: none;
+}
+
+
+/* LOADING SCREEN */
+
+#loadingScreen {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: #020617;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: cyan;
+  z-index: 999;
+}
+
+#loadingScreen h1 {
+  font-size: 32px;
+  text-shadow: 0 0 20px cyan;
+}
+
+.loader {
+  width: 70%;
+  height: 10px;
+  background: #111;
+  margin-top: 20px;
+}
+
+#loadingBar {
+  width: 0%;
+  height: 100%;
+  background: cyan;
+}

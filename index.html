@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shadow Copy</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loadingScreen">
+  <h1>SHADOW COPY</h1>
+  <div class="loader">
+    <div id="loadingBar"></div>
+  </div>
+</div>
+
+<div id="ui">
+  <div>Round: <span id="round">1</span></div>
+  <div>Time: <span id="timer">10</span></div>
+  <div>Score: <span id="score">0</span></div>
+  <div>Multiplier: x<span id="multiplier">1</span></div>
+</div>
+
+<canvas id="game"></canvas>
+
+<div id="gameOver" class="hidden">
+  <h1>Game Over</h1>
+  <button onclick="restartGame()">Restart</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
