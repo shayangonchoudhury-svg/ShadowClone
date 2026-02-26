@@ -15,6 +15,9 @@ let hasDied = false;
 
 let score = 0;
 let multiplier = 1;
+let roundScore = 0;
+let roundScoreCap = 30;
+let totalScoreFromCompletedRounds = 0;
 let slowMotion = false;
 let shakeIntensity = 0;
 
@@ -42,6 +45,70 @@ let obstacles = [];
 let trailParticles = [];
 let deathFragments = [];
 let touchTarget = null;
+
+/* ---------------- BACKGROUND DECOR ---------------- */
+
+let backgroundTrees = [];
+let backgroundHouses = [];
+let bgOffset = 0;
+
+function createBackground() {
+  backgroundTrees = [];
+  backgroundHouses = [];
+
+  for (let i = 0; i < 15; i++) {
+    backgroundTrees.push({
+      x: Math.random() * canvas.width,
+      y: canvas.height - 120 - Math.random() * 80,
+      size: 40 + Math.random() * 40
+    });
+  }
+
+  for (let i = 0; i < 6; i++) {
+    backgroundHouses.push({
+      x: Math.random() * canvas.width,
+      y: canvas.height - 100,
+      width: 60,
+      height: 60
+    });
+  }
+}
+
+/* ---------------- STAGE SYSTEM ---------------- */
+
+let currentStage = 0;
+let stageElements = [];
+
+const stageThemes = [
+  "stars",
+  "clouds",
+  "fog",
+  "city",
+  "lightning",
+  "forest",
+  "cyberpunk",
+  "horror",
+  "minimal",
+  "storm"
+];
+
+
+function generateStageElements() {
+
+  stageElements = [];
+
+  const theme = stageThemes[currentStage % stageThemes.length];
+
+  for (let i = 0; i < 15; i++) {
+    stageElements.push({
+      x: Math.random() * canvas.width,
+      y: canvas.height - 100 - Math.random() * 150,
+      size: 40 + Math.random() * 60,
+      type: theme
+    });
+  }
+}
+
 
 /* ---------------- CAMERA SHAKE ---------------- */
 
@@ -115,6 +182,7 @@ function drawDeathFragments() {
   }
 }
 
+
 /* ---------------- OBSTACLES ---------------- */
 
 function createObstacles() {
@@ -126,6 +194,50 @@ function createObstacles() {
       size: 40
     });
   }
+}
+
+function drawBackgroundDecor() {
+
+  bgOffset += 0.2; // slow parallax movement
+
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+
+  // Draw Trees
+  backgroundTrees.forEach(tree => {
+    let x = (tree.x - bgOffset) % canvas.width;
+    if (x < 0) x += canvas.width;
+
+    ctx.fillStyle = "rgba(0,255,255,0.4)";
+
+    // trunk
+    ctx.fillRect(x, tree.y, 6, tree.size);
+
+    // top
+    ctx.beginPath();
+    ctx.arc(x + 3, tree.y, tree.size / 2, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Draw Houses
+  backgroundHouses.forEach(house => {
+    let x = (house.x - bgOffset * 0.5) % canvas.width;
+    if (x < 0) x += canvas.width;
+
+    ctx.fillStyle = "rgba(0,255,255,0.4)";
+
+    ctx.fillRect(x, house.y, house.width, house.height);
+
+    // roof
+    ctx.beginPath();
+    ctx.moveTo(x, house.y);
+    ctx.lineTo(x + house.width / 2, house.y - 30);
+    ctx.lineTo(x + house.width, house.y);
+    ctx.closePath();
+    ctx.fill();
+  });
+
+  ctx.restore();
 }
 
 /* ---------------- CLONES ---------------- */
@@ -153,9 +265,87 @@ function checkCollision(a, b, sizeA, sizeB) {
   );
 }
 
+/* ---------------- ROUND BACKGROUND THEME ---------------- */
+
+function updateRoundTheme() {
+
+  currentStage = Math.floor((round - 1) / 5);
+  const hue = (currentStage * 50) % 360;
+
+  document.body.style.background = `
+    radial-gradient(circle at center,
+      hsl(${hue}, 50%, 12%) 0%,
+      hsl(${hue}, 60%, 6%) 100%)
+  `;
+
+  generateStageElements();
+}
+
+
+
+
+/* ---------------- DRAW STAGE ENVIRONMENT ---------------- */
+
+function drawStageEnvironment() {
+
+  ctx.save();
+  ctx.globalAlpha = 0.06;
+
+  stageElements.forEach(e => {
+
+    ctx.fillStyle = "rgba(0,255,255,0.4)";
+
+    switch (e.type) {
+
+      case "stars":
+        ctx.fillRect(e.x, e.y - 200, 3, 3);
+        break;
+
+      case "clouds":
+        ctx.beginPath();
+        ctx.arc(e.x, e.y - 150, 40, 0, Math.PI * 2);
+        ctx.arc(e.x + 40, e.y - 150, 40, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+
+      case "fog":
+        ctx.fillRect(0, canvas.height - 120, canvas.width, 80);
+        break;
+
+      case "city":
+      case "minimal":
+      case "cyberpunk":
+      case "horror":
+        ctx.fillRect(e.x, canvas.height - e.size, 40, e.size);
+        break;
+
+      case "forest":
+        ctx.fillRect(e.x, canvas.height - e.size, 6, e.size);
+        ctx.beginPath();
+        ctx.arc(e.x + 3, canvas.height - e.size, e.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+        break;
+
+      case "lightning":
+      case "storm":
+        ctx.beginPath();
+        ctx.moveTo(e.x, 0);
+        ctx.lineTo(e.x + 10, 150);
+        ctx.lineTo(e.x - 10, 300);
+        ctx.stroke();
+        break;
+    }
+  });
+
+  ctx.restore();
+}
+
+
+
 /* ---------------- ROUND ---------------- */
 
 function nextRound() {
+  totalScoreFromCompletedRounds += roundScoreCap;
   clones.push({
     x: 0,
     y: 0,
@@ -172,7 +362,11 @@ function nextRound() {
 
   document.getElementById("round").innerText = round;
   document.getElementById("multiplier").innerText = multiplier;
+  roundScore = 0;
+roundScoreCap = 30 + round * 8; // increases each round
+updateRoundTheme(); // 🔥 Dynamic color shift
 }
+
 
 /* ---------------- DEATH TRIGGER ---------------- */
 
@@ -183,18 +377,22 @@ function triggerDeath() {
   gameRunning = false;
 
   lastScore = Math.floor(score);
-  showLastScore = true;
-  lastScoreScale = 3;
+
+  document.getElementById("finalScoreDisplay").innerText =
+    "Last Score: " + lastScore;
 
   shakeIntensity = 50;
   createDeathFragments();
 }
+
 
 /* ---------------- GAME LOOP ---------------- */
 
 function gameLoop() {
   ctx.save();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawStageEnvironment();
+  drawBackgroundDecor();
   applyCameraShake();
 
   if (!hasDied) {
@@ -263,31 +461,22 @@ function gameLoop() {
     const elapsed = (Date.now() - roundStartTime) / 1000;
     const timeLeft = Math.max(0, roundDuration - Math.floor(elapsed));
     document.getElementById("timer").innerText = timeLeft;
+/* --------- TIME SYNCHRONIZED ROUND SCORE --------- */
 
-    score += multiplier * (slowMotion ? 0.5 : 1);
-    document.getElementById("score").innerText = Math.floor(score);
+const progress = Math.min(elapsed / roundDuration, 1);
+roundScore = progress * roundScoreCap;
+
+score = totalScoreFromCompletedRounds + roundScore;
+
+document.getElementById("score").innerText = Math.floor(score);
+
+
+
 
     if (elapsed >= roundDuration) nextRound();
   }
 
   drawDeathFragments();
-
-  /* ---------------- DRAW LAST SCORE ---------------- */
-
-  if (showLastScore) {
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-
-    if (lastScoreScale > 1) {
-      lastScoreScale *= 0.96;
-    }
-
-    ctx.font = `${50 * lastScoreScale}px Segoe UI`;
-    ctx.fillText("LAST SCORE", canvas.width / 2, canvas.height / 2 - 70);
-
-    ctx.font = `${70 * lastScoreScale}px Segoe UI`;
-    ctx.fillText(lastScore, canvas.width / 2, canvas.height / 2 + 10);
-  }
 
   ctx.restore();
   requestAnimationFrame(gameLoop);
@@ -309,12 +498,17 @@ function restartGame() {
 
   showLastScore = false;
   lastScoreScale = 3;
+totalScoreFromCompletedRounds = 0;
 
   document.getElementById("gameOver").classList.add("hidden");
   document.getElementById("round").innerText = 1;
   document.getElementById("multiplier").innerText = 1;
+roundScore = 0;
+roundScoreCap = 30;
 
   createObstacles();
+  createBackground(); 
+  updateRoundTheme();
 }
 
 /* ---------------- TOUCH ---------------- */
@@ -339,8 +533,12 @@ canvas.addEventListener("touchend", () => {
 
 function startGameAfterLoading() {
   createObstacles();
+  createBackground(); 
+  updateRoundTheme();
   gameLoop();
 }
+
+
 
 function runLoading() {
   let progress = 0;
