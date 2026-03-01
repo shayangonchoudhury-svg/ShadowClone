@@ -10,8 +10,9 @@
 
 <!-- LOADING SCREEN -->
 <div id="loadingScreen">
+<img src="logo.png" class="game-logo-img">
   <h1>SHADOW CLONE</h1>
-  <h2>-- BY SHAYAN --</h2>
+  <h2>--BY SHAYAN--</h2>
   <div class="loader">
     <div id="loadingBar"></div>
   </div>
@@ -24,11 +25,26 @@
   <div>Multiplier: x<span id="multiplier">1</span></div>
 </div>
 
+<div id="difficultyOverlay" class="difficulty-hidden">
+  <div class="difficulty-tab">
+
+    <h1>Select Difficulty</h1>
+
+    <button class="difficulty-btn novice" data-level="novice">Novice</button>
+    <button class="difficulty-btn standard" data-level="standard">Standard</button>
+    <button class="difficulty-btn expert" data-level="expert">Expert</button>
+    <button class="difficulty-btn hell" data-level="hell">Hell</button>
+
+  </div>
+</div>
+
+
 <canvas id="game"></canvas>
 
 <div id="gameOver" class="hidden">
   <h1>Game Over</h1>
   <h2 id="finalScoreDisplay"></h2>
+  <h3 id="highScoreDisplay"></h3>
   <button onclick="restartGame()">Restart</button>
 </div>
 
@@ -36,4 +52,3 @@
 <script src="script.js"></script>
 </body>
 </html>
-
