@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Shadow Clone</title>
+
+<!-- ADD THIS LINE 👇 -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -48,7 +53,16 @@
   <button onclick="restartGame()">Restart</button>
 </div>
 
-
+<!-- SOUNDS -->
+<audio id="clickSound" src="sounds/click.mp3"></audio>
+<audio id="deathSound" src="sounds/death.mp3"></audio>
+<audio id="bgMusic" src="sounds/bg.mp3" loop></audio>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("service-worker.js")
+    .then(() => console.log("Service Worker Registered"));
+}
+</script>
 <script src="script.js"></script>
 </body>
 </html>
