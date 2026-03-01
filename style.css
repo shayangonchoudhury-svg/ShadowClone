@@ -208,12 +208,24 @@ button:hover {
   left: 20px;
   padding: 15px 20px;
   border-radius: 20px;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(12px);
-  border: 2px solid transparent;
-  background-clip: padding-box;
-  animation: borderShift 4s linear infinite;
+
+  /* More transparent glass look */
+  background: rgba(0, 0, 0, 0.01);
+  backdrop-filter: blur(14px);
+
+  /* Softer border */
+  border: 1px solid rgba(0, 255, 255, 0.25);
+
+  /* Subtle glow instead of heavy glow */
+  box-shadow:
+    0 0 12px rgba(0,255,255,0.15),
+    inset 0 0 8px rgba(0,255,255,0.08);
+
+  font-size: 15px;
+  line-height: 1.8;
+  z-index: 10;
 }
+
 
 #ui span {
   color: white;
