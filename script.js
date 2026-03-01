@@ -4,6 +4,16 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth * 0.95;
 canvas.height = window.innerHeight * 0.9;
 
+/* ---------------- SOUND SYSTEM ---------------- */
+
+const clickSound = document.getElementById("clickSound");
+const deathSound = document.getElementById("deathSound");
+const bgMusic = document.getElementById("bgMusic");
+
+// Optional volume control
+bgMusic.volume = 0.4;
+clickSound.volume = 0.5;
+deathSound.volume = 0.6;
 
 /* ---------------- TUTORIAL SYSTEM ---------------- */
 
@@ -429,8 +439,12 @@ updateRoundTheme(); // 🔥 Dynamic color shift
 /* ---------------- DEATH TRIGGER ---------------- */
 
 function triggerDeath() {
+
   if (hasDied) return;
 
+  deathSound.currentTime = 0;
+  deathSound.play();
+ bgMusic.pause();
   hasDied = true;
   gameRunning = false;
 
@@ -625,6 +639,8 @@ if (difficulty) {
   createObstacles();
   createBackground(); 
   updateRoundTheme();
+  bgMusic.currentTime = 0;  // reset music to start
+bgMusic.play();           // play music again
 }
 
 /* ---------------- TOUCH ---------------- */
@@ -672,6 +688,7 @@ canvas.addEventListener("touchend", () => {
 /* ---------------- LOADING SYSTEM ---------------- */
 
 function startGameAfterLoading() {
+
 
   createBackground();
   updateRoundTheme();
@@ -797,7 +814,9 @@ function hideDifficultySelector() {
 
 document.querySelectorAll(".difficulty-btn").forEach(btn => {
   btn.addEventListener("click", () => {
-
+clickSound.currentTime = 0;
+clickSound.play();
+bgMusic.play();
     if (gameState !== "difficulty") return;
 
     difficulty = btn.dataset.level;
@@ -827,6 +846,5 @@ document.querySelectorAll(".difficulty-btn").forEach(btn => {
 
   });
 });
-
 
 
