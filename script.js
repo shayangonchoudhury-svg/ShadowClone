@@ -701,7 +701,7 @@ function runLoading() {
       document.getElementById("loadingScreen").style.display = "none";
       startGameAfterLoading();
     }
-  }, 60);
+  }, 260);
 }
 
 runLoading();
@@ -827,5 +827,6 @@ document.querySelectorAll(".difficulty-btn").forEach(btn => {
 
   });
 });
+
 
 
