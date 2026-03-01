@@ -49,12 +49,27 @@ body::before {
 }
 
 #loadingScreen h1 {
-  font-size: 38px;
-  letter-spacing: 4px;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 28px;
+  letter-spacing: 3px;
+  line-height: 1.6;
+  text-align: center;
+
+  color: #0b07f4;
+
+  /* Softer glow */
   text-shadow:
-    0 0 6px rgba(0,255,255,0.7),
-    0 0 12px rgba(0,255,255,0.5);
+    0 0 3px #00ffff,
+    0 0 8px rgba(0, 255, 255, 0.6);
+
   animation: pulseTitle 2s infinite ease-in-out;
+}
+
+
+#loadingScreen h2 {
+  font-family: 'Press Start 2P', cursive;
+  font-size: 12px;
+  margin-top: 15px;
 }
 
 @keyframes pulseTitle {
@@ -307,4 +322,38 @@ button:hover {
 
 .difficulty-btn:hover {
   transform: scale(1.08);
+}
+
+
+/* ---------------- DIFFICULTY FONT ---------------- */
+
+.difficulty-tab h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.difficulty-btn {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+
+#gameOver h1 {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+
+#finalScoreDisplay,
+#highScoreDisplay {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+#gameOver button {
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 600;
 }
