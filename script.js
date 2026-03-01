@@ -4,6 +4,57 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth * 0.95;
 canvas.height = window.innerHeight * 0.9;
 
+
+/* ---------------- TUTORIAL SYSTEM ---------------- */
+
+let tutorialCompleted =
+  localStorage.getItem("shadowTutorialDone") === "true";
+
+
+
+let tutorialStep = 0;
+let tutorialMessage = "";
+let tutorialOverlayAlpha = 0.75;
+let tutorialTimer = 0;
+let tutorialTextVisible = true;
+
+
+
+/* ---------------- DIFFICULTY SYSTEM ---------------- */
+
+let difficulty = null;
+
+const difficultySettings = {
+  novice: {
+    baseObstacles: 2,
+    roundDuration: 20,
+    baseScoreCap: 15
+  },
+  standard: {
+    baseObstacles: 3,
+    roundDuration: 16,
+    baseScoreCap: 30
+  },
+  expert: {
+    baseObstacles: 4,
+    roundDuration: 13,
+    baseScoreCap: 45
+  },
+  hell: {
+    baseObstacles: 5,
+    roundDuration: 10,
+    baseScoreCap: 60
+  }
+};
+
+let gameState = "loading";
+// possible states:
+// "loading"
+// "tutorial"
+// "difficulty"
+// "playing"
+// "gameover"
+
 /* ---------------- GAME STATE ---------------- */
 
 let round = 1;
@@ -23,6 +74,7 @@ let shakeIntensity = 0;
 
 /* ---------------- LAST SCORE FX ---------------- */
 
+let highScore = parseInt(localStorage.getItem("shadowHighScore")) || 0;
 let lastScore = 0;
 let showLastScore = false;
 let lastScoreScale = 3;
@@ -38,7 +90,7 @@ const player = {
   acceleration: 0.6,
   friction: 0.90
 };
-
+canvas.style.pointerEvents = "none";
 let playerPath = [];
 let clones = [];
 let obstacles = [];
@@ -187,7 +239,11 @@ function drawDeathFragments() {
 
 function createObstacles() {
   obstacles = [];
-  for (let i = 0; i < 3 + round; i++) {
+
+  const base = difficultySettings[difficulty].baseObstacles;
+  const totalObstacles = base + (round - 1);
+
+  for (let i = 0; i < totalObstacles; i++) {
     obstacles.push({
       x: Math.random() * (canvas.width - 40),
       y: Math.random() * (canvas.height - 40),
@@ -195,6 +251,7 @@ function createObstacles() {
     });
   }
 }
+
 
 function drawBackgroundDecor() {
 
@@ -351,7 +408,7 @@ function nextRound() {
     y: 0,
     path: [...playerPath],
     frame: Math.random() * playerPath.length,
-    speed: 1 + round * 0.2
+    speed: gameState === "tutorial" ? 0.5 : 1 + round * 0.2
   });
 
   multiplier++;
@@ -363,7 +420,8 @@ function nextRound() {
   document.getElementById("round").innerText = round;
   document.getElementById("multiplier").innerText = multiplier;
   roundScore = 0;
-roundScoreCap = 30 + round * 8; // increases each round
+roundScoreCap =
+  difficultySettings[difficulty].baseScoreCap + round * 8; // increases each round
 updateRoundTheme(); // 🔥 Dynamic color shift
 }
 
@@ -381,21 +439,75 @@ function triggerDeath() {
   document.getElementById("finalScoreDisplay").innerText =
     "Last Score: " + lastScore;
 
+    // -------- HIGH SCORE SYSTEM --------
+
+if (lastScore > highScore) {
+  highScore = lastScore;
+  localStorage.setItem("shadowHighScore", highScore);
+}
+
+if (lastScore > highScore) {
+  document.getElementById("highScoreDisplay").innerText =
+    "🔥 NEW HIGH SCORE: " + highScore;
+}
+
+document.getElementById("highScoreDisplay").innerText =
+  "Highest Score: " + highScore;
+
+// -----------------------------------
+
   shakeIntensity = 50;
   createDeathFragments();
 }
 
 
+
 /* ---------------- GAME LOOP ---------------- */
 
 function gameLoop() {
+
   ctx.save();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   drawStageEnvironment();
   drawBackgroundDecor();
   applyCameraShake();
 
-  if (!hasDied) {
+  /* ---------------- FREEZE STATES ---------------- */
+
+  if (gameState === "difficulty") {
+    drawDeathFragments();
+    ctx.restore();
+    requestAnimationFrame(gameLoop);
+    return;
+  }
+
+  if (gameState === "tutorial") {
+
+    // Tutorial progression logic
+    if (tutorialStep === 2 && Date.now() - tutorialTimer > 5000) {
+      nextRound();
+      tutorialStep = 3;
+      tutorialTimer = Date.now();
+      updateTutorial();
+    }
+
+    if (tutorialStep === 3 && Date.now() - tutorialTimer > 2000) {
+      tutorialStep = 4;
+      updateTutorial();
+    }
+
+    runTutorial();
+
+    drawDeathFragments();
+    ctx.restore();
+    requestAnimationFrame(gameLoop);
+    return;
+  }
+
+  /* ---------------- PLAYING STATE ---------------- */
+
+  if (gameState === "playing" && !hasDied) {
 
     if (touchTarget) {
       const dx = touchTarget.x - player.x;
@@ -417,6 +529,12 @@ function gameLoop() {
 
     player.x += player.vx;
     player.y += player.vy;
+
+    /* --------- ADD BOUNDARY HERE --------- */
+    player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+    player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+    /* -------------------------------------- */
+
 
     if (Math.abs(player.vx) > 0.2 || Math.abs(player.vy) > 0.2) {
       createTrail();
@@ -461,26 +579,21 @@ function gameLoop() {
     const elapsed = (Date.now() - roundStartTime) / 1000;
     const timeLeft = Math.max(0, roundDuration - Math.floor(elapsed));
     document.getElementById("timer").innerText = timeLeft;
-/* --------- TIME SYNCHRONIZED ROUND SCORE --------- */
 
-const progress = Math.min(elapsed / roundDuration, 1);
-roundScore = progress * roundScoreCap;
-
-score = totalScoreFromCompletedRounds + roundScore;
-
-document.getElementById("score").innerText = Math.floor(score);
-
-
-
+    const progress = Math.min(elapsed / roundDuration, 1);
+    roundScore = progress * roundScoreCap;
+    score = totalScoreFromCompletedRounds + roundScore;
+    document.getElementById("score").innerText = Math.floor(score);
 
     if (elapsed >= roundDuration) nextRound();
   }
 
   drawDeathFragments();
-
   ctx.restore();
   requestAnimationFrame(gameLoop);
 }
+
+
 
 /* ---------------- RESTART ---------------- */
 
@@ -504,7 +617,10 @@ totalScoreFromCompletedRounds = 0;
   document.getElementById("round").innerText = 1;
   document.getElementById("multiplier").innerText = 1;
 roundScore = 0;
-roundScoreCap = 30;
+if (difficulty) {
+  roundScoreCap = difficultySettings[difficulty].baseScoreCap;
+}
+
 
   createObstacles();
   createBackground(); 
@@ -514,10 +630,34 @@ roundScoreCap = 30;
 /* ---------------- TOUCH ---------------- */
 
 canvas.addEventListener("touchstart", e => {
+
+  if (gameState === "tutorial") {
+
+    if (tutorialStep === 0) {
+      tutorialStep = 1;
+      updateTutorial();
+      return;
+    }
+
+    if (tutorialStep === 1) {
+      tutorialStep = 2;
+      tutorialTimer = Date.now();
+      roundStartTime = Date.now();
+      updateTutorial();
+      return;
+    }
+
+  }
+
+  if (gameState !== "playing") return;
+
   const t = e.touches[0];
   touchTarget = { x: t.clientX, y: t.clientY };
   slowMotion = true;
 });
+
+
+
 
 canvas.addEventListener("touchmove", e => {
   const t = e.touches[0];
@@ -532,11 +672,19 @@ canvas.addEventListener("touchend", () => {
 /* ---------------- LOADING SYSTEM ---------------- */
 
 function startGameAfterLoading() {
-  createObstacles();
-  createBackground(); 
+
+  createBackground();
   updateRoundTheme();
+
+  // Always show difficulty first
+  gameState = "difficulty";
+  showDifficultySelector();
+
   gameLoop();
 }
+
+
+
 
 
 
@@ -557,3 +705,127 @@ function runLoading() {
 }
 
 runLoading();
+function runTutorial() {
+
+  if (!tutorialTextVisible) return;
+
+  ctx.save();
+
+  ctx.fillStyle = `rgba(0,0,0,${tutorialOverlayAlpha})`;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.font = "28px Segoe UI";
+
+  ctx.fillText(
+    tutorialMessage,
+    canvas.width / 2,
+    canvas.height / 2
+  );
+
+  ctx.restore();
+}
+
+
+function updateTutorial() {
+
+  switch (tutorialStep) {
+
+    case 0:
+      tutorialMessage = "Touch anywhere to move";
+      break;
+
+    case 1:
+      tutorialMessage = "Hold to activate slow motion";
+      break;
+
+    case 2:
+      tutorialMessage = "Survive until timer ends";
+      break;
+
+    case 3:
+      tutorialMessage = "Your past self hunts you!";
+      break;
+
+   case 4:
+
+  tutorialTextVisible = false;
+
+  setTimeout(() => {
+
+    tutorialCompleted = true;
+    localStorage.setItem("shadowTutorialDone", "true");
+
+    tutorialStep = 0;
+    gameState = "playing";
+    roundStartTime = Date.now();
+
+  }, 800);
+
+  break;
+
+
+  }
+}
+
+
+function applyDifficultySettings() {
+
+  const settings = difficultySettings[difficulty];
+
+  roundDuration = settings.roundDuration;
+  roundScoreCap = settings.baseScoreCap;
+
+}
+
+
+/* ---------------- DIFFICULTY WHEEL LOGIC ---------------- */
+
+function showDifficultySelector() {
+  const overlay = document.getElementById("difficultyOverlay");
+  overlay.classList.remove("difficulty-hidden");
+  overlay.style.display = "flex";   // Force show
+}
+
+function hideDifficultySelector() {
+  const overlay = document.getElementById("difficultyOverlay");
+  overlay.classList.add("difficulty-hidden");
+  overlay.style.display = "none";   // Force hide
+}
+
+
+document.querySelectorAll(".difficulty-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+
+    if (gameState !== "difficulty") return;
+
+    difficulty = btn.dataset.level;
+
+    applyDifficultySettings();
+
+    // HIDE IMMEDIATELY
+    hideDifficultySelector();
+
+    round = 1;
+    roundScore = 0;
+    totalScoreFromCompletedRounds = 0;
+    roundStartTime = Date.now();
+
+    createObstacles();
+
+    canvas.style.pointerEvents = "auto";
+
+    if (!tutorialCompleted) {
+      gameState = "tutorial";
+      tutorialStep = 0;
+      tutorialTextVisible = true;
+      updateTutorial();
+    } else {
+      gameState = "playing";
+    }
+
+  });
+});
+
+
