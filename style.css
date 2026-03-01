@@ -30,6 +30,7 @@ body::before {
 
 #loadingScreen {
   position: fixed;
+  inset: 0;
   width: 100vw;
   height: 100vh;
   background: #020617;
@@ -38,16 +39,21 @@ body::before {
   justify-content: center;
   align-items: center;
   color: cyan;
-  z-index: 999;
+  z-index: 2000;
+}
+
+.game-logo-img {
+  width: 100px;
+  margin-bottom: 20px;
+  animation: logoFloat 3s ease-in-out infinite;
 }
 
 #loadingScreen h1 {
   font-size: 38px;
   letter-spacing: 4px;
   text-shadow:
-    0 0 10px #00ffff,
-    0 0 20px #00ffff,
-    0 0 40px #00ffff;
+    0 0 6px rgba(0,255,255,0.7),
+    0 0 12px rgba(0,255,255,0.5);
   animation: pulseTitle 2s infinite ease-in-out;
 }
 
@@ -233,4 +239,60 @@ button:hover {
   font-size: 22px;
   margin-bottom: 20px;
   color: white;
+}
+
+
+/* ---------------- DIFFICULTY OVERLAY ---------------- */
+#difficultyOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+.difficulty-hidden {
+  display: none !important;
+}
+
+.difficulty-tab {
+  background: rgba(0,0,0,0.7);
+  padding: 40px;
+  border-radius: 25px;
+  text-align: center;
+  box-shadow: 0 0 40px cyan;
+  animation: popIn 0.4s ease;
+}
+
+.difficulty-tab h1 {
+  margin-bottom: 25px;
+  text-shadow: 0 0 20px cyan;
+}
+
+.difficulty-btn {
+  display: block;
+  width: 220px;
+  margin: 12px auto;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 30px;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.novice { background: #2ecc71; }
+.standard { background: #3498db; }
+.expert { background: #f39c12; }
+.hell { 
+  background: #e74c3c;
+  box-shadow: 0 0 20px red;
+}
+
+.difficulty-btn:hover {
+  transform: scale(1.08);
 }
